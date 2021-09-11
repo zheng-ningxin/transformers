@@ -38,11 +38,10 @@ from emmental.modules.binarizer import TopKBinarizer
 
 mask_path = './mask'
 weight_path = './weight'
-head_pruner_cfg = torch.load('head_prune_cfg')
 task_name = "qqp"
 n_epochs = 10
 model_name_or_path = '../training/result/qqp_partial/coarse_0.3/checkpoint-220000/'
-data_dir = '../../data-bin/glue_data/QQP'
+data_dir = './QQP'
 max_seq_length= 128
 device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
 

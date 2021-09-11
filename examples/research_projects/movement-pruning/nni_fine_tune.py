@@ -32,7 +32,7 @@ import torch
 import sys
 import os
 from nni.algorithms.compression.pytorch.pruning import LevelPruner
-
+from emmental.modules.binarizer import TopKBinarizer
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--ck_path', required=True, help='ckpath of the masked bert')
@@ -40,6 +40,12 @@ def main():
     config = MaskedBertConfig.from_pretrained(args.ck_path)
     tokenizer = BertTokenizer.from_pretrained(args.ck_path)
     mask_model = MaskedBertForSequenceClassification.from_pretrained(args.ck_path, config=config)
-
+    threshold = 0.05
+    nni_mask = {}
+    for name, layer in mask_model.named_modules():
+        if isinstance(layer, MaskedLinear):
+            w_mask = TopKBinarizer.apply(layer.mask_scores, threshold)
+            nni_mask[name] = {'weight':w_mask}
+    torch.save(nni_mask, 'nni_mask.pth')
 if __name__ == '__main__':
     main()

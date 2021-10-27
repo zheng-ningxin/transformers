@@ -114,7 +114,10 @@ class DataTrainingArguments:
         default=20,
         metadata={"help": "Audio clips will be randomly cut to this length during training if the value is set."},
     )
-
+    lr_scheduler_type: Optional[str] = field(
+        default='cosine',
+        metadata={"help": "The lr scheduler type."},
+    )
 
 @dataclass
 class ModelArguments:
@@ -279,7 +282,7 @@ def main():
     # `predictions` and `label_ids` fields) and has to return a dictionary string to float.
     def compute_metrics(eval_pred):
         """Computes accuracy on a batch of predictions"""
-        predictions = np.argmax(eval_pred.predictions, axis=1)
+        predictions = np.argmax(eval_pred.predictions[0], axis=1)
         return metric.compute(predictions=predictions, references=eval_pred.label_ids)
 
     config = AutoConfig.from_pretrained(
@@ -338,6 +341,7 @@ def main():
             checkpoint = training_args.resume_from_checkpoint
         elif last_checkpoint is not None:
             checkpoint = last_checkpoint
+        # import pdb; pdb.set_trace()
         train_result = trainer.train(resume_from_checkpoint=checkpoint)
         trainer.save_model()
         trainer.log_metrics("train", train_result.metrics)

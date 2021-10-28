@@ -21,4 +21,4 @@ python run_audio_classification.py \
 	--save_total_limit 3 \
 	--seed 0 \
 	--finegrained \
-	--sparsity_ratio 0.6
+	--sparsity_ratio 0.95

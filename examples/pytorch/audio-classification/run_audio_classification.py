@@ -315,7 +315,7 @@ def main():
     pruner = None
     if model_args.finegrained:
         model, pruner= finegrain_pruned_hubert(model, model_args.sparsity_ratio)
-        import pdb; pdb.set_trace()
+        # import pdb; pdb.set_trace()
     # freeze the convolutional waveform encoder
     if model_args.freeze_feature_extractor:
         model.freeze_feature_extractor()
@@ -355,6 +355,9 @@ def main():
             checkpoint = last_checkpoint
         # import pdb; pdb.set_trace()
         train_result = trainer.train(resume_from_checkpoint=checkpoint)
+        # need unwarp the model before the save
+        if pruner is not None:
+            pruner._unwrap_model()
         trainer.save_model()
         trainer.log_metrics("train", train_result.metrics)
         trainer.save_metrics("train", train_result.metrics)

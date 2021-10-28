@@ -1,5 +1,5 @@
 python run_audio_classification.py \
-	--model_name_or_path superb/hubert-base-superb-ks \
+	--model_name_or_path hubert_pretrained_ck \
 	--dataset_name superb \
 	--dataset_config_name ks \
 	--output_dir hubert_ks_finetune_finegrained \
@@ -20,5 +20,6 @@ python run_audio_classification.py \
 	--load_best_model_at_end True \
 	--save_total_limit 3 \
 	--seed 0 \
+	--lr_scheduler_type cosine \
 	--finegrained \
 	--sparsity_ratio 0.95

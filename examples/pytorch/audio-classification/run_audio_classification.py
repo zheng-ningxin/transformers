@@ -22,6 +22,7 @@ from random import randint
 from typing import Optional
 
 import datasets
+from importlib_metadata import metadata
 import numpy as np
 from datasets import DatasetDict, load_dataset
 
@@ -154,6 +155,12 @@ class ModelArguments:
         default=False,
         metadata={
             "help": "If prune the model in the fine-grained way"
+        }
+    )
+    coarsegrained: Optional[bool] = field(
+        default=False,
+        metadata={
+            "help": "If prune the model in the coarse-grained way"
         }
     )
     sparsity_ratio: Optional[float] = field(
@@ -316,6 +323,9 @@ def main():
     if model_args.finegrained:
         model, pruner= finegrain_pruned_hubert(model, model_args.sparsity_ratio)
         # import pdb; pdb.set_trace()
+    elif model_args.coarsegrained:
+        import pdb; pdb.set_trace()
+        model = coarsegrain_pruned_hubert(model, model_args.sparsity_ratio)
     # freeze the convolutional waveform encoder
     if model_args.freeze_feature_extractor:
         model.freeze_feature_extractor()

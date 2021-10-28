@@ -2,7 +2,7 @@ python run_audio_classification.py \
 	--model_name_or_path superb/hubert-base-superb-ks \
 	--dataset_name superb \
 	--dataset_config_name ks \
-	--output_dir hubert_ks_finetune \
+	--output_dir hubert_ks_finetune_finegrained \
 	--overwrite_output_dir \
 	--remove_unused_columns False \
 	--do_train --eval_split_name test --learning_rate 1e-3 \
@@ -19,4 +19,6 @@ python run_audio_classification.py \
 	--save_strategy epoch \
 	--load_best_model_at_end True \
 	--save_total_limit 3 \
-	--seed 0
+	--seed 0 \
+	--finegrained \
+	--sparsity_ratio 0.6

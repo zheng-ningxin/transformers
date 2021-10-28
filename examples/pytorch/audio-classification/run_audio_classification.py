@@ -38,7 +38,7 @@ from transformers import (
 from transformers.trainer_utils import get_last_checkpoint
 from transformers.utils import check_min_version
 from transformers.utils.versions import require_version
-
+from get_prune_bert import *
 
 logger = logging.getLogger(__name__)
 
@@ -114,10 +114,7 @@ class DataTrainingArguments:
         default=20,
         metadata={"help": "Audio clips will be randomly cut to this length during training if the value is set."},
     )
-    lr_scheduler_type: Optional[str] = field(
-        default='cosine',
-        metadata={"help": "The lr scheduler type."},
-    )
+
 
 @dataclass
 class ModelArguments:
@@ -152,6 +149,18 @@ class ModelArguments:
             "help": "Will use the token generated when running `transformers-cli login` (necessary to use this script "
             "with private models)."
         },
+    )
+    finegrained: Optional[bool] = field(
+        default=False,
+        metadata={
+            "help": "If prune the model in the fine-grained way"
+        }
+    )
+    sparsity_ratio: Optional[float] = field(
+        default=0,
+        metadata={
+            "help": "The sparsity ratio"
+        }
     )
 
 
@@ -303,7 +312,10 @@ def main():
         revision=model_args.model_revision,
         use_auth_token=True if model_args.use_auth_token else None,
     )
-
+    pruner = None
+    if model_args.finegrained:
+        model, pruner= finegrain_pruned_hubert(model, model_args.sparsity_ratio)
+        import pdb; pdb.set_trace()
     # freeze the convolutional waveform encoder
     if model_args.freeze_feature_extractor:
         model.freeze_feature_extractor()

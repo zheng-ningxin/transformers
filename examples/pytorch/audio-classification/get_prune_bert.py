@@ -23,19 +23,33 @@ def copy_tensor(t1, t2):
 
 def inherit_weight(model, ori_model):
     for name, module in model.named_modules():
-        if isinstance(module, (torch.nn.Linear, torch.nn.Conv1d)):
+        if hasattr(module, 'weight') and module.weight is not None:
             _, ori_module = get_module_by_name(ori_model, name)
             copy_tensor(module.weight, ori_module.weight)
+            # import pdb; pdb.set_trace()
             if hasattr(module, 'bias') and module.bias is not None:
                 copy_tensor(module.bias, ori_module.bias)
+
+# def coarsegrain_pruned_hubert(model, sparsity):
+#     remained = 1- sparsity
+#     config = deepcopy(model.config)
+#     for i, _ in enumerate(config.conv_dim):
+#         if i == len(config.conv_dim) - 1:
+#             continue
+#         config.conv_dim[i] = int(config.conv_dim[i] * remained) // 16 * 16
+
+#     config.intermediate_size = int(config.intermediate_size * remained) // 16 * 16
+#     config.hidden_size = int(config.hidden_size * remained) // 16 * 16
+#     config.num_attention_heads = int(config.num_attention_heads*sparsity)
+#     new_model = HubertForSequenceClassification(config)
+#     inherit_weight(new_model, model)
+#     return new_model
 
 def coarsegrain_pruned_hubert(model, sparsity):
     remained = 1- sparsity
     config = deepcopy(model.config)
-    for i, _ in enumerate(config.conv_dim):
-        if i == len(config.conv_dim) - 1:
-            continue
-        config.conv_dim[i] = int(config.conv_dim[i] * remained) // 16 * 16
+
+    config.conv_dim = [512, 512, 256, 256, 512, 512, 512]
 
     config.intermediate_size = int(config.intermediate_size * remained) // 16 * 16
     config.hidden_size = int(config.hidden_size * remained) // 16 * 16

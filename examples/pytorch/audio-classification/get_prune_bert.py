@@ -24,12 +24,15 @@ def copy_tensor(t1, t2):
 def inherit_weight(model, ori_model):
     for name, module in model.named_modules():
         if hasattr(module, 'weight') and module.weight is not None:
+            print(type(module))
+            # if isinstance(module, (torch.nn.LayerNorm, torch.nn.GroupNorm)):
+            #     import pdb; pdb.set_trace()
             _, ori_module = get_module_by_name(ori_model, name)
             copy_tensor(module.weight, ori_module.weight)
             # import pdb; pdb.set_trace()
             if hasattr(module, 'bias') and module.bias is not None:
                 copy_tensor(module.bias, ori_module.bias)
-
+    # import pdb; pdb.set_trace()
 # def coarsegrain_pruned_hubert(model, sparsity):
 #     remained = 1- sparsity
 #     config = deepcopy(model.config)
@@ -49,7 +52,7 @@ def coarsegrain_pruned_hubert(model, sparsity):
     remained = 1- sparsity
     config = deepcopy(model.config)
 
-    config.conv_dim = [512, 512, 256, 256, 512, 512, 512]
+    # config.conv_dim = [512, 512, 256, 256, 512, 512, 512]
 
     config.intermediate_size = int(config.intermediate_size * remained) // 16 * 16
     config.hidden_size = int(config.hidden_size * remained) // 16 * 16

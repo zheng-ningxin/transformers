@@ -53,7 +53,7 @@ def coarsegrain_pruned_hubert(model, sparsity):
     remained = 1- sparsity
     config = deepcopy(model.config)
 
-    config.conv_dim = [512, 256, 256, 256, 256, 256, 512]
+#    config.conv_dim = [512, 256, 256, 256, 256, 256, 512]
 
     config.intermediate_size = 768
     config.hidden_size = 192

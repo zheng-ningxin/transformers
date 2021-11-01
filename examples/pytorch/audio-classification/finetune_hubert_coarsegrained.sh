@@ -22,4 +22,5 @@ python run_audio_classification.py \
 	--seed 0 \
 	--lr_scheduler_type cosine \
 	--coarsegrained \
+	--weight_decay 5e-4 \
 	--sparsity_ratio 0.5

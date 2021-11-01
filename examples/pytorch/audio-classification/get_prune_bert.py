@@ -49,14 +49,15 @@ def inherit_weight(model, ori_model):
 #     return new_model
 
 def coarsegrain_pruned_hubert(model, sparsity):
+    # coarse grained pruning head
     remained = 1- sparsity
     config = deepcopy(model.config)
 
-    # config.conv_dim = [512, 512, 256, 256, 512, 512, 512]
+    config.conv_dim = [512, 256, 256, 256, 256, 256, 512]
 
-    config.intermediate_size = int(config.intermediate_size * remained) // 16 * 16
-    config.hidden_size = int(config.hidden_size * remained) // 16 * 16
-    config.num_attention_heads = int(config.num_attention_heads*sparsity)
+    config.intermediate_size = 768
+    config.hidden_size = 192
+    config.num_attention_heads = 3
     new_model = HubertForSequenceClassification(config)
     inherit_weight(new_model, model)
     return new_model

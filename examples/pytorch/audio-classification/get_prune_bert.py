@@ -55,9 +55,12 @@ def coarsegrain_pruned_hubert(model, sparsity):
 
 #    config.conv_dim = [512, 256, 256, 256, 256, 256, 512]
 
-    config.intermediate_size = 768
-    config.hidden_size = 192
-    config.num_attention_heads = 3
+    #config.intermediate_size = 768
+    #config.hidden_size = 192
+    #config.num_attention_heads = 3
+    config.intermediate_size = 512
+    config.hidden_size = 128
+    config.num_attention_heads = 2
     new_model = HubertForSequenceClassification(config)
     inherit_weight(new_model, model)
     return new_model

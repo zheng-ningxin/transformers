@@ -2,7 +2,7 @@ python run_audio_classification.py \
 	--model_name_or_path hubert_pretrained_ck \
 	--dataset_name superb \
 	--dataset_config_name ks \
-	--output_dir hubert_ks_finetune_coarsegrained_small_run2 \
+	--output_dir hubert_ks_finetune_coarsegrained_supersmall_run1 \
 	--overwrite_output_dir \
 	--remove_unused_columns False \
 	--do_train --eval_split_name test --learning_rate 1e-3 \

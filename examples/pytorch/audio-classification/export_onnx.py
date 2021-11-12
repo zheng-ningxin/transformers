@@ -304,6 +304,6 @@ if __name__ == '__main__':
     data = (dummy_input['input_values'].to('cpu'), dummy_input['attention_mask'].to('cpu'))
     import pdb; pdb.set_trace()
     # torch.onnx.export(model.to('cpu'), dummy_input['input_values'].to('cpu'), model_args.onnx_name, opset_version=10)
-
-    jit_model = torch.jit.trace(model, data)
-    print(measure_time(jit_model, data))
+    print(measure_time(model.cuda(), [dummy_input['input_values'].cuda()]))
+    # jit_model = torch.jit.trace(model, data)
+    # print(measure_time(jit_model, data))

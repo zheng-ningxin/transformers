@@ -4,6 +4,7 @@ import sys
 from dataclasses import dataclass, field
 from random import randint
 from typing import Optional
+import time
 
 
 import datasets
@@ -26,6 +27,21 @@ from transformers.utils import check_min_version
 from transformers.utils.versions import require_version
 from get_prune_bert import *
 import argparse
+
+def measure_time(model, dummy_input, runtimes=200):
+    times = []
+    with torch.no_grad():
+        for runtime in range(runtimes):
+            torch.cuda.synchronize()
+            start = time.time()
+            out=model(*dummy_input)
+            torch.cuda.synchronize()
+            end = time.time()
+            times.append(end-start)
+    _drop = int(runtimes * 0.1)
+    mean = np.mean(times[_drop:-1*_drop])
+    std = np.std(times[_drop:-1*_drop])
+    return mean*1000, std*1000
 
 @dataclass
 class DataTrainingArguments:
@@ -284,5 +300,10 @@ if __name__ == '__main__':
         use_auth_token=True if model_args.use_auth_token else None,
     )
     dummy_input = torch.load('dummy_input.pth')
+    model = model.to('cpu')
+    data = (dummy_input['input_values'].to('cpu'), dummy_input['attention_mask'].to('cpu'))
     import pdb; pdb.set_trace()
-    torch.onnx.export(model.to('cpu'), dummy_input['input_values'].to('cpu'), model_args.onnx_name, opset_version=10)
+    # torch.onnx.export(model.to('cpu'), dummy_input['input_values'].to('cpu'), model_args.onnx_name, opset_version=10)
+
+    jit_model = torch.jit.trace(model, data)
+    print(measure_time(jit_model, data))

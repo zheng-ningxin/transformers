@@ -1,19 +1,3 @@
-#!/usr/bin/env python
-# coding=utf-8
-# Copyright 2021 The HuggingFace Inc. team. All rights reserved.
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
 import logging
 import os
 import sys
@@ -40,23 +24,7 @@ from transformers.trainer_utils import get_last_checkpoint
 from transformers.utils import check_min_version
 from transformers.utils.versions import require_version
 from get_prune_bert import *
-
-logger = logging.getLogger(__name__)
-
-# Will error if the minimal version of Transformers is not installed. Remove at your own risks.
-check_min_version("4.12.0.dev0")
-
-require_version("datasets>=1.14.0", "To fix: pip install -r examples/pytorch/audio-classification/requirements.txt")
-
-
-def random_subsample(wav: np.ndarray, max_length: float, sample_rate: int = 16000):
-    """Randomly sample chunks of `max_length` seconds from the input audio"""
-    sample_length = int(round(sample_rate * max_length))
-    if len(wav) <= sample_length:
-        return wav
-    random_offset = randint(0, len(wav) - sample_length - 1)
-    return wav[random_offset : random_offset + sample_length]
-
+import argparse
 
 @dataclass
 class DataTrainingArguments:
@@ -169,16 +137,7 @@ class ModelArguments:
             "help": "The sparsity ratio"
         }
     )
-    hook_forward: Optional[bool] =  field(
-        default=False,
-        metadata={
-            "help": "hook the forward function"
-        }
-    )
-
-
-def main():
-    # See all possible arguments in src/transformers/training_args.py
+if __name__ == '__main__':
     # or by passing the --help flag to this script.
     # We now keep distinct sets of args, for a cleaner separation of concerns.
 
@@ -325,85 +284,4 @@ def main():
         revision=model_args.model_revision,
         use_auth_token=True if model_args.use_auth_token else None,
     )
-    if model_args.hook_forward:
-        def op_decorator(func):
-            def new_func(*args, **kwargs):
-                import pdb; pdb.set_trace()
-                return None
-            return new_func
-        setattr(model, 'forward', op_decorator(getattr(model, 'forward')))
-    pruner = None
-    if model_args.finegrained:
-        model, pruner= finegrain_pruned_hubert(model, model_args.sparsity_ratio)
-        # import pdb; pdb.set_trace()
-    elif model_args.coarsegrained:
-        import pdb; pdb.set_trace()
-        model = coarsegrain_pruned_hubert(model, model_args.sparsity_ratio)
-    # freeze the convolutional waveform encoder
-    if model_args.freeze_feature_extractor:
-        model.freeze_feature_extractor()
-
-    if training_args.do_train:
-        if data_args.max_train_samples is not None:
-            raw_datasets["train"] = (
-                raw_datasets["train"].shuffle(seed=training_args.seed).select(range(data_args.max_train_samples))
-            )
-        # Set the training transforms
-        raw_datasets["train"].set_transform(train_transforms, output_all_columns=False)
-
-    if training_args.do_eval:
-        if data_args.max_eval_samples is not None:
-            raw_datasets["eval"] = (
-                raw_datasets["eval"].shuffle(seed=training_args.seed).select(range(data_args.max_eval_samples))
-            )
-        # Set the validation transforms
-        raw_datasets["eval"].set_transform(val_transforms, output_all_columns=False)
-
-    # Initialize our trainer
-    trainer = Trainer(
-        model=model,
-        args=training_args,
-        train_dataset=raw_datasets["train"] if training_args.do_train else None,
-        eval_dataset=raw_datasets["eval"] if training_args.do_eval else None,
-        compute_metrics=compute_metrics,
-        tokenizer=feature_extractor,
-    )
-
-    # Training
-    if training_args.do_train:
-        checkpoint = None
-        if training_args.resume_from_checkpoint is not None:
-            checkpoint = training_args.resume_from_checkpoint
-        elif last_checkpoint is not None:
-            checkpoint = last_checkpoint
-        # import pdb; pdb.set_trace()
-        train_result = trainer.train(resume_from_checkpoint=checkpoint)
-        # need unwarp the model before the save
-        if pruner is not None:
-            pruner._unwrap_model()
-        trainer.save_model()
-        trainer.log_metrics("train", train_result.metrics)
-        trainer.save_metrics("train", train_result.metrics)
-        trainer.save_state()
-
-    # Evaluation
-    if training_args.do_eval:
-        metrics = trainer.evaluate()
-        trainer.log_metrics("eval", metrics)
-        trainer.save_metrics("eval", metrics)
-
-    # Write model card and (optionally) push to hub
-    kwargs = {
-        "finetuned_from": model_args.model_name_or_path,
-        "tasks": "audio-classification",
-        "dataset": data_args.dataset_name,
-        "tags": ["audio-classification"],
-    }
-    if training_args.push_to_hub:
-        trainer.push_to_hub(**kwargs)
-    else:
-        trainer.create_model_card(**kwargs)
-
-
-if __name__ == "__main__":
-    main()
+    dummy_input = torch.load_

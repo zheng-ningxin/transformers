@@ -5,6 +5,7 @@ from dataclasses import dataclass, field
 from random import randint
 from typing import Optional
 
+
 import datasets
 from importlib_metadata import metadata
 import numpy as np
@@ -137,6 +138,12 @@ class ModelArguments:
             "help": "The sparsity ratio"
         }
     )
+    onnx_name:  Optional[str] =  field(
+        default='',
+        metadata={
+            "help": "onnx mode path"
+        }
+    )
 if __name__ == '__main__':
     # or by passing the --help flag to this script.
     # We now keep distinct sets of args, for a cleaner separation of concerns.
@@ -157,18 +164,13 @@ if __name__ == '__main__':
     )
 
     log_level = training_args.get_process_log_level()
-    logger.setLevel(log_level)
+    
     transformers.utils.logging.set_verbosity(log_level)
     transformers.utils.logging.enable_default_handler()
     transformers.utils.logging.enable_explicit_format()
 
     # Log on each process the small summary:
-    logger.warning(
-        f"Process rank: {training_args.local_rank}, device: {training_args.device}, n_gpu: {training_args.n_gpu} "
-        + f"distributed training: {bool(training_args.local_rank != -1)}, 16-bits training: {training_args.fp16}"
-    )
-    logger.info(f"Training/evaluation parameters {training_args}")
-
+    
     # Set seed before initializing model.
     set_seed(training_args.seed)
 
@@ -182,10 +184,7 @@ if __name__ == '__main__':
                 "Use --overwrite_output_dir to train from scratch."
             )
         elif last_checkpoint is not None and training_args.resume_from_checkpoint is None:
-            logger.info(
-                f"Checkpoint detected, resuming training at {last_checkpoint}. To avoid this behavior, change "
-                "the `--output_dir` or add `--overwrite_output_dir` to train from scratch."
-            )
+            pass
 
     # Initialize our dataset and prepare it for the audio classification task.
     raw_datasets = DatasetDict()
@@ -284,4 +283,6 @@ if __name__ == '__main__':
         revision=model_args.model_revision,
         use_auth_token=True if model_args.use_auth_token else None,
     )
-    dummy_input = torch.load_
+    dummy_input = torch.load('dummy_input.pth')
+    import pdb; pdb.set_trace()
+    torch.onnx.export(model.to('cpu'), dummy_input['input_values'].to('cpu'), model_args.onnx_name, opset_version=10)

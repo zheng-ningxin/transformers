@@ -27,6 +27,8 @@ from transformers.utils import check_min_version
 from transformers.utils.versions import require_version
 from get_prune_bert import *
 import argparse
+from SparGen.Common.Utils import *
+from shape_hook import ShapeHook
 
 def measure_time(model, dummy_input, runtimes=200):
     times = []
@@ -158,6 +160,12 @@ class ModelArguments:
         default='',
         metadata={
             "help": "onnx mode path"
+        }
+    )
+    export_tesa: Optional[bool] = field(
+        default=False,
+        metadata={
+            "help": "if export onnx with tesa"
         }
     )
 if __name__ == '__main__':
@@ -302,8 +310,14 @@ if __name__ == '__main__':
     dummy_input = torch.load('dummy_input.pth')
     model = model.to('cpu')
     data = (dummy_input['input_values'].to('cpu'), dummy_input['attention_mask'].to('cpu'))
-    import pdb; pdb.set_trace()
-    # torch.onnx.export(model.to('cpu'), dummy_input['input_values'].to('cpu'), model_args.onnx_name, opset_version=10)
-    print(measure_time(model.cuda(), [dummy_input['input_values'].cuda()]))
+    # import pdb; pdb.set_trace()
+    if not model_args.export_tesa:
+        pass
+        # torch.onnx.export(model.to('cpu'), dummy_input['input_values'].to('cpu'), model_args.onnx_name, opset_version=10)
+    else:
+        export_tesa(model.to('cpu'), dummy_input['input_values'].to('cpu'), model_args.onnx_name)
+    sh = ShapeHook(model.to('cpu'), dummy_input['input_values'].to('cpu'))
+    sh.export('shape.json')
+    # print(measure_time(model.cuda(), [dummy_input['input_values'].cuda()]))
     # jit_model = torch.jit.trace(model, data)
     # print(measure_time(jit_model, data))

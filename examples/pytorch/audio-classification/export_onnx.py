@@ -162,6 +162,12 @@ class ModelArguments:
             "help": "onnx mode path"
         }
     )
+    tesa_path:  Optional[str] =  field(
+        default=None,
+        metadata={
+            "help": "onnx mode path"
+        }
+    )
     export_tesa: Optional[bool] = field(
         default=False,
         metadata={
@@ -310,12 +316,23 @@ if __name__ == '__main__':
     dummy_input = torch.load('dummy_input.pth')
     model = model.to('cpu')
     data = (dummy_input['input_values'].to('cpu'), dummy_input['attention_mask'].to('cpu'))
+    # mask = {}
+    # for name, module in model.named_modules():
+    #     if isinstance(module, (torch.nn.Linear, torch.nn.Conv1d)):
+    #         mask[name] = {}
+    #         mask[name]['weight'] = (module.weight!=0).to(torch.float32)
+
+    # import pdb; pdb.set_trace()
+
     # import pdb; pdb.set_trace()
     if not model_args.export_tesa:
         pass
         # torch.onnx.export(model.to('cpu'), dummy_input['input_values'].to('cpu'), model_args.onnx_name, opset_version=10)
     else:
-        export_tesa(model.to('cpu'), dummy_input['input_values'].to('cpu'), model_args.onnx_name)
+        tesa = None
+        if model_args.tesa_path:
+            tesa = torch.load(model_args.tesa_path)
+        export_tesa(model.to('cpu'), dummy_input['input_values'].to('cpu'), model_args.onnx_name, tesa)
     sh = ShapeHook(model.to('cpu'), dummy_input['input_values'].to('cpu'))
     sh.export('shape.json')
     # print(measure_time(model.cuda(), [dummy_input['input_values'].cuda()]))

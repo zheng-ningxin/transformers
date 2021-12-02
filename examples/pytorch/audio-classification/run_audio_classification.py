@@ -40,6 +40,7 @@ from transformers.trainer_utils import get_last_checkpoint
 from transformers.utils import check_min_version
 from transformers.utils.versions import require_version
 from get_prune_bert import *
+from nni.algorithms.compression.pytorch.quantization import QAT_Quantizer
 
 logger = logging.getLogger(__name__)
 
@@ -368,6 +369,26 @@ def main():
         compute_metrics=compute_metrics,
         tokenizer=feature_extractor,
     )
+    
+    configure_list = [{
+        'quant_types': ['weight', 'input', 'output'],
+        'quant_bits': {
+            'weight': 8,
+            'input': 8,
+            'output': 8
+        }, # you can just use `int` here because all `quan_types` share same bits length, see config for `ReLu6` below.
+        'op_types':['Conv2d', 'Linear'],
+        'quant_start_step': 0
+    }]
+    optimizer = trainer.create_optimizer()
+    #dummy_input = torch.load('dummy_input.pth')
+    dummy_input = torch.rand((32, 16000)).to("cuda")
+    #data = (dummy_input['input_values'].to('cuda'), dummy_input['attention_mask'].to('cuda'))
+    model.eval().to("cuda")
+    model(dummy_input)
+    quantizer = QAT_Quantizer(model, configure_list, optimizer)
+    quantizer.compress()
+    
 
     # Training
     if training_args.do_train:

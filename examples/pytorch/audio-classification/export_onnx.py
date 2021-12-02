@@ -313,7 +313,7 @@ if __name__ == '__main__':
         revision=model_args.model_revision,
         use_auth_token=True if model_args.use_auth_token else None,
     )
-    dummy_input = torch.load('dummy_input.pth')
+    dummy_input = torch.load('dummy_input.pth', map_location='cpu')
     model = model.to('cpu')
     data = (dummy_input['input_values'].to('cpu'), dummy_input['attention_mask'].to('cpu'))
     # mask = {}
@@ -325,16 +325,17 @@ if __name__ == '__main__':
     # import pdb; pdb.set_trace()
 
     # import pdb; pdb.set_trace()
-    if not model_args.export_tesa:
-        pass
-        # torch.onnx.export(model.to('cpu'), dummy_input['input_values'].to('cpu'), model_args.onnx_name, opset_version=10)
-    else:
-        tesa = None
-        if model_args.tesa_path:
-            tesa = torch.load(model_args.tesa_path)
-        export_tesa(model.to('cpu'), dummy_input['input_values'].to('cpu'), model_args.onnx_name, tesa)
-    sh = ShapeHook(model.to('cpu'), dummy_input['input_values'].to('cpu'))
-    sh.export('shape.json')
-    # print(measure_time(model.cuda(), [dummy_input['input_values'].cuda()]))
+    # if not model_args.export_tesa:
+    #     pass
+    #     # torch.onnx.export(model.to('cpu'), dummy_input['input_values'].to('cpu'), model_args.onnx_name, opset_version=10)
+    # else:
+    #     tesa = None
+    #     if model_args.tesa_path:
+    #         tesa = torch.load(model_args.tesa_path)
+    #     export_tesa(model.to('cpu'), dummy_input['input_values'].to('cpu'), model_args.onnx_name, tesa)
+    # sh = ShapeHook(model.to('cpu'), dummy_input['input_values'].to('cpu'))
+    # sh.export('shape.json')
+    import pdb; pdb.set_trace()
+    print(measure_time(model.cuda(), [dummy_input['input_values'].cuda()]))
     # jit_model = torch.jit.trace(model, data)
     # print(measure_time(jit_model, data))

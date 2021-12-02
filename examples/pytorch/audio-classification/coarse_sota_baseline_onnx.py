@@ -333,5 +333,17 @@ if __name__ == '__main__':
             mask[name]['weight'][:intermediate_size] = 1
         elif 'output_dense' in name:
             mask[name]['weight'][:hidden_size] = 1
+    for name in mask:
+    # import pdb; pdb.set_trace()
+        _, leaf_module = get_module_by_name(model, name)
+        masks = mask[name]
+        for key in masks:
+            _tensor = getattr(leaf_module, key)
+            if _tensor is None:
+                continue
+            # apply the mask for the onnx values
+            _tensor.data = _tensor.data * mask[name][key].data.to(_tensor.device)
+    import pdb; pdb.set_trace()
+
     export_tesa(model.to('cpu'), dummy_input['input_values'].to('cpu'), 'hubert_sota_coarse_onnx', mask)
    

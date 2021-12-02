@@ -9,9 +9,9 @@ python run_audio_classification.py \
 	--max_length_seconds 1 \
 	--warmup_ratio 0.1 \
 	--num_train_epochs 200 \
-	--per_device_train_batch_size 32 \
+	--per_device_train_batch_size 4\
 	--gradient_accumulation_steps 4 \
-	--per_device_eval_batch_size 32 \
+	--per_device_eval_batch_size 4 \
 	--dataloader_num_workers 12 \
 	--logging_strategy steps \
 	--logging_steps 10 \
